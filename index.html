@@ -1,0 +1,1553 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>걷기길·공원 추천</title>
+  <style>
+    :root {
+      --bg: #f6f7f3;
+      --card: #ffffff;
+      --ink: #1f2a23;
+      --muted: #6b7a6f;
+      --line: #e3e6df;
+      --accent: #3f7d52;
+      --accent-soft: #e7f0e7;
+      --trail: #b77a4a;
+      --park: #4f7ea8;
+      --warm: #f2ece0;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      line-height: 1.55;
+    }
+    a { color: inherit; }
+
+    .wrap { max-width: 1180px; margin: 0 auto; padding: 0 22px; }
+
+    .hero {
+      padding: 56px 0 38px;
+    }
+    .hero h1 {
+      font-size: 30px;
+      font-weight: 700;
+      margin: 0 0 12px;
+      letter-spacing: -0.4px;
+    }
+    .hero p.lead {
+      color: var(--muted);
+      font-size: 16px;
+      margin: 0 0 28px;
+      max-width: 620px;
+    }
+    .entry-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 22px;
+    }
+    .entry-card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 22px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      transition: border-color .15s, box-shadow .15s;
+    }
+    .entry-card:hover {
+      border-color: #cfd6ce;
+      box-shadow: 0 6px 18px rgba(30,40,30,.06);
+    }
+    .entry-card.travel { border-top: 4px solid var(--trail); }
+    .entry-card.neighborhood { border-top: 4px solid var(--park); }
+    .entry-card h2 {
+      font-size: 20px;
+      font-weight: 650;
+      margin: 0;
+    }
+    .entry-card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 15px;
+    }
+    .entry-card .go {
+      margin-top: 6px;
+      display: inline-block;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--accent);
+    }
+
+    .home-row {
+      display: flex;
+      gap: 16px;
+      align-items: stretch;
+    }
+    .home-list {
+      flex: 1;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 18px;
+    }
+    .home-list h2 {
+      font-size: 16px;
+      font-weight: 650;
+      margin: 0 0 12px;
+    }
+    .mini-list { list-style: none; padding: 0; margin: 0; }
+    .mini-list li {
+      padding: 10px 0;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: baseline;
+    }
+    .mini-list li:last-child { border-bottom: none; }
+    .mini-list .name { font-weight: 550; font-size: 15px; }
+    .mini-list .meta { color: var(--muted); font-size: 13px; }
+
+    .home-aside {
+      width: 260px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .pill-box {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 18px;
+    }
+    .pill-box h2 { font-size: 15px; font-weight: 650; margin: 0 0 10px; }
+    .pill {
+      display: inline-block;
+      margin: 0 6px 6px 0;
+      padding: 6px 11px;
+      border-radius: 999px;
+      font-size: 13px;
+      background: var(--warm);
+      color: #5a4a35;
+    }
+    .pill.green { background: var(--accent-soft); color: var(--accent); }
+
+    .btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 9px 16px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .12s, border-color .12s;
+    }
+    .btn:hover { background: var(--accent-soft); border-color: #c4d2c4; }
+    .btn.primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+    .btn.primary:hover { background: #356a45; }
+
+    .nav-bar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: rgba(246,247,243,.82);
+      backdrop-filter: blur(6px);
+      border-bottom: 1px solid var(--line);
+      padding: 12px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+    }
+    .nav-bar .brand {
+      font-weight: 650;
+      font-size: 15px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .nav-bar .brand svg { width: 20px; height: 20px; }
+    .nav-bar .links { display: flex; gap: 10px; align-items: center; }
+    .nav-bar .links a { font-size: 14px; }
+    .nav-bar .links a.active { color: var(--accent); font-weight: 600; }
+
+    .section-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 14px;
+      margin: 30px 0 14px;
+    }
+    .section-head h2 {
+      font-size: 19px;
+      font-weight: 650;
+      margin: 0;
+    }
+    .section-head .sub {
+      color: var(--muted);
+      font-size: 14px;
+      margin-top: 4px;
+    }
+
+    .filter-wrap {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 16px 18px;
+      margin-bottom: 18px;
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      gap: 18px;
+    }
+    .filter-col h3 {
+      font-size: 13px;
+      font-weight: 650;
+      text-transform: uppercase;
+      letter-spacing: .6px;
+      color: var(--muted);
+      margin: 0 0 10px;
+    }
+    .filter-group { margin-bottom: 14px; }
+    .filter-group:last-child { margin-bottom: 0; }
+    .filter-group > label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: var(--ink);
+    }
+    .chip-row { display: flex; flex-wrap: wrap; gap: 6px; }
+    .chip {
+      border: 1px solid var(--line);
+      background: var(--card);
+      border-radius: 999px;
+      padding: 5px 11px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: background .12s, border-color .12s, color .12s;
+      user-select: none;
+    }
+    .chip:hover { border-color: #cfd6ce; }
+    .chip.on {
+      background: var(--accent-soft);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .view-seg {
+      display: inline-flex;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      overflow: hidden;
+    }
+    .view-seg button {
+      border: none;
+      background: var(--card);
+      padding: 7px 13px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .view-seg button.on {
+      background: var(--accent);
+      color: #fff;
+    }
+    .view-seg button:not(.on):hover { background: var(--warm); }
+
+    .result-line {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+    .result-line b { color: var(--ink); }
+
+    .card-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      overflow: hidden;
+      transition: border-color .12s;
+      display: flex;
+      flex-direction: column;
+    }
+    .card:hover { border-color: #cfd6ce; }
+    .card-img {
+      width: 100%;
+      height: 150px;
+      background: #dfe5dd;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--muted);
+      font-size: 13px;
+      position: relative;
+    }
+    .card-img .badge {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.85);
+      color: var(--ink);
+    }
+    .badge.trail { background: #f3e2d2; color: var(--trail); }
+    .badge.park { background: #dce6f3; color: var(--park); }
+    .card-body { padding: 14px 15px 15px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
+    .card-body h3 { font-size: 17px; font-weight: 650; margin: 0; }
+    .card-body .loc { color: var(--muted); font-size: 13px; }
+    .card-body .desc { color: var(--ink); font-size: 14px; margin: 0; }
+    .tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 2px; }
+    .pill-sm {
+      font-size: 12px;
+      padding: 3px 9px;
+      border-radius: 999px;
+      background: var(--warm);
+      color: #5a4a35;
+    }
+    .pill-sm.green { background: var(--accent-soft); color: var(--accent); }
+    .card-foot {
+      margin-top: auto;
+      display: flex;
+      gap: 12px;
+      font-size: 13px;
+      color: var(--muted);
+      padding: 0 0 12px;
+      border-top: 1px dashed var(--line);
+      padding-top: 10px;
+    }
+    .card-foot .stat { display: flex; gap: 5px; align-items: center; }
+    .card-foot .stat svg { width: 14px; height: 14px; }
+
+    .list-view { display: flex; flex-direction: column; gap: 10px; }
+    .list-item {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 13px 15px;
+      display: grid;
+      grid-template-columns: 230px 1fr auto;
+      gap: 14px;
+      align-items: center;
+    }
+    .list-item .thumb {
+      width: 230px;
+      height: 98px;
+      background: #dfe5dd;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .list-item .body h3 { font-size: 17px; margin: 0 0 4px; }
+    .list-item .body .loc { color: var(--muted); font-size: 13px; }
+    .list-item .body .tags { margin-top: 6px; }
+    .list-item .stats {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 4px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .list-item .stats strong { color: var(--ink); }
+
+    .map-view {
+      background: #eef2ec;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      height: 360px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--muted);
+      font-size: 14px;
+      position: relative;
+    }
+    .map-view .pins { position: absolute; inset: 0; }
+    .pin {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      background: var(--accent);
+      border: 2px solid #fff;
+      border-radius: 50%;
+      transform: translate(-50%,-50%);
+    }
+    .pin.trail { background: var(--trail); }
+    .pin.park { background: var(--park); }
+    .map-view .map-label {
+      position: relative;
+      z-index: 2;
+    }
+    .map-view .map-footer {
+      position: relative;
+      z-index: 2;
+      margin-top: 10px;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      font-size: 13px;
+      color: var(--ink);
+    }
+
+    .detail {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 24px 26px;
+    }
+    .detail-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 18px;
+      margin-bottom: 20px;
+    }
+    .detail h1 { font-size: 24px; font-weight: 680; margin: 0 0 6px; letter-spacing: -0.3px; }
+    .detail .loc { color: var(--muted); font-size: 14px; margin: 0; }
+    .detail-tags { margin: 10px 0 4px; }
+    .detail-actions { display: flex; gap: 8px; align-items: center; }
+
+    .summary-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 18px;
+      background: var(--warm);
+      border-radius: 12px;
+      padding: 14px 16px;
+    }
+    .summary-row .s { text-align: center; }
+    .summary-row .s .v { font-size: 18px; font-weight: 650; color: var(--ink); }
+    .summary-row .s .l { font-size: 13px; color: var(--muted); }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 24px;
+    }
+    .block { margin-bottom: 22px; }
+    .block h2 {
+      font-size: 15px;
+      font-weight: 650;
+      margin: 0 0 10px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--line);
+    }
+    .map-box {
+      background: #eef2ec;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      height: 260px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--muted);
+      font-size: 14px;
+      position: relative;
+    }
+    .map-box .route {
+      position: absolute;
+      height: 2px;
+      background: var(--accent);
+      width: 160px;
+      top: 50%;
+      left: 24%;
+      opacity: .7;
+    }
+    .map-box .start {
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      background: #fff;
+      border: 2px solid var(--accent);
+      border-radius: 50%;
+      left: 24%;
+      top: 50%;
+      transform: translate(-50%,-50%);
+    }
+    .map-box .end {
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      background: var(--accent);
+      border: 2px solid #fff;
+      border-radius: 50%;
+      right: 24%;
+      top: 50%;
+      transform: translate(50%,-50%);
+    }
+    .detail-list { list-style: none; padding: 0; margin: 0; }
+    .detail-list li {
+      padding: 7px 0;
+      border-bottom: 1px dashed var(--line);
+      font-size: 14px;
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .detail-list li:last-child { border-bottom: none; }
+    .detail-list .k { color: var(--muted); }
+    .detail-list .v { font-weight: 550; }
+
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(3,1fr);
+      gap: 8px;
+    }
+    .gallery div {
+      height: 90px;
+      background: #dfe5dd;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .related .r-card {
+      display: flex;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px dashed var(--line);
+      align-items: center;
+    }
+    .related .r-card:last-child { border-bottom: none; }
+    .related .r-thumb {
+      width: 70px;
+      height: 70px;
+      background: #dfe5dd;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--muted);
+      font-size: 11px;
+      flex-shrink: 0;
+    }
+    .related .r-body h4 { font-size: 14px; margin: 0 0 2px; }
+    .related .r-body p { margin: 0; font-size: 13px; color: var(--muted); }
+
+    .contrib {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 24px 26px;
+      max-width: 740px;
+    }
+    .contrib h1 { font-size: 21px; font-weight: 650; margin: 0 0 6px; }
+    .contrib .sub { color: var(--muted); font-size: 14px; margin: 0 0 20px; }
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px 16px;
+    }
+    .field { display: flex; flex-direction: column; gap: 5px; }
+    .field.full { grid-column: 1 / -1; }
+    .field label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--ink);
+    }
+    .field label .opt { color: var(--muted); font-weight: 400; font-size: 12px; }
+    .field input, .field textarea, .field select {
+      font-family: inherit;
+      font-size: 14px;
+      padding: 8px 10px;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      background: #fbfcf9;
+      color: var(--ink);
+    }
+    .field textarea { resize: vertical; min-height: 80px; }
+    .check-group { display: flex; flex-direction: column; gap: 7px; }
+    .check-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .check-row input { width: 15px; height: 15px; }
+    .chip-pick { display: flex; flex-wrap: wrap; gap: 6px; }
+    .chip-pick .chip { cursor: pointer; }
+
+    .submit-area {
+      margin-top: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .note { font-size: 12px; color: var(--muted); }
+
+    .hidden { display: none; }
+    .float-cta {
+      position: fixed;
+      right: 20px;
+      bottom: 24px;
+      z-index: 30;
+    }
+    .back {
+      margin-top: 26px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 14px;
+      color: var(--muted);
+      cursor: pointer;
+      background: none;
+      border: none;
+    }
+    .back:hover { color: var(--accent); }
+
+    @media (max-width: 880px) {
+      .filter-wrap { grid-template-columns: 1fr; }
+      .card-grid { grid-template-columns: 1fr 1fr; }
+      .two-col { grid-template-columns: 1fr; }
+      .list-view .list-item { grid-template-columns: 1fr; }
+      .list-item .thumb { width: 100%; }
+      .home-row, .home-aside { display: block; }
+      .home-aside { width: 100%; }
+      .entry-grid { grid-template-columns: 1fr; }
+      .summary-row { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<nav class="nav-bar">
+  <div class="wrap" style="display:flex;align-items:center;justify-content:space-between;width:100%">
+    <div class="brand">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+        <path d="M3 13c0 4 3 6 6 6s6-2 6-6"/>
+        <path d="M3 17c0 4 3 6 6 6s6-2 6-6"/>
+        <path d="M15 7l3-3 3 3"/>
+      </svg>
+      걷기길·공원 추천
+    </div>
+    <div class="links">
+      <a href="#" data-nav="home" class="active">홈</a>
+      <a href="#" data-nav="list" data-nav2="travel">여행지</a>
+      <a href="#" data-nav="list" data-nav2="neighborhood">동네</a>
+      <a href="#" data-nav="contribute">제보하기</a>
+    </div>
+  </div>
+</nav>
+
+<div class="wrap">
+
+  <section id="section-home" class="home">
+    <div class="hero">
+      <h1>걷기 좋은 길, 산책하기 좋은 공원</h1>
+      <p class="lead">여행지의 걷기길부터 내 동네 근린공원까지, 코스를 중심으로 찾아보기 쉽게 정리합니다. 직접 가본 곳, 가보고 싶은 곳을 제보로 함께 채워요.</p>
+      <div class="entry-grid">
+        <div class="entry-card travel">
+          <h2>여행지 걷기길·공원</h2>
+          <p>조금 멀리 가도 괜찮은 길, 풍경을 보러 가는 코스, 한 번쯤 걸어볼 만한 공원</p>
+          <a class="go" href="#" data-nav="list" data-nav2="travel">여행지 추천 보기 →</a>
+        </div>
+        <div class="entry-card neighborhood">
+          <h2>내 동네 산책로·공원</h2>
+          <p>집 근처에서 가볍게 걷기 좋은 곳, 퇴근 후 산책, 주말 근린공원 산책</p>
+          <a class="go" href="#" data-nav="list" data-nav2="neighborhood">동네 추천 보기 →</a>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn primary" data-nav="contribute">제보하기</button>
+        <button class="btn" data-nav="list">지도에서 보기</button>
+      </div>
+    </div>
+
+    <div class="home-row">
+      <div class="home-list">
+        <h2>이 주의 추천</h2>
+        <ul class="mini-list" id="home-mini"></ul>
+      </div>
+      <div class="home-aside">
+        <div class="pill-box">
+          <h2>분위기 태그 예시</h2>
+          <div id="home-pills"></div>
+        </div>
+        <div class="pill-box">
+          <h2>제보 유형 예시</h2>
+          <div id="home-types"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="section-list" class="list hidden">
+    <div class="section-head">
+      <div>
+        <h2 id="list-title">걷기길·공원 목록</h2>
+        <div class="sub" id="list-sub">조건에 맞는 곳을 찾아보세요.</div>
+      </div>
+    </div>
+
+    <div class="filter-wrap" id="filter-wrap">
+      <div class="filter-col">
+        <div class="filter-group">
+          <label>범위 성향</label>
+          <div class="chip-row" id="f-range">
+            <span class="chip" data-val="travel">여행지 중심</span>
+            <span class="chip" data-val="neighborhood">동네 생활권 중심</span>
+            <span class="chip" data-val="both">둘 다</span>
+          </div>
+        </div>
+        <div class="filter-group">
+          <label>유형</label>
+          <div class="chip-row" id="f-type">
+            <span class="chip" data-val="trail">산책로</span>
+            <span class="chip" data-val="park">공원</span>
+            <span class="chip" data-val="both">둘 다</span>
+          </div>
+        </div>
+        <div class="filter-group">
+          <label>실용 조건 (여러 개 선택 가능)</label>
+          <div class="chip-row" id="f-practical">
+            <span class="chip" data-val="transit">대중교통 이용 편함</span>
+            <span class="chip" data-val="parking">주차 가능</span>
+            <span class="chip" data-val="toilet">화장실 있음</span>
+            <span class="chip" data-val="pet">반려동물 동반 가능</span>
+            <span class="chip" data-val="stroller">유모차/휠체어 이용 참고</span>
+          </div>
+        </div>
+        <div class="filter-group">
+          <label> 분위기 / 목적 (선택)</label>
+          <div class="chip-row" id="f-mood">
+            <span class="chip" data-val="healing">힐링</span>
+            <span class="chip" data-val="walk">산책</span>
+            <span class="chip" data-val="running">러닝</span>
+            <span class="chip" data-val="quiet">조용한 곳</span>
+            <span class="chip" data-val="fewpeople">사람 적은 곳</span>
+            <span class="chip" data-val="nightview">야경</span>
+            <span class="chip" data-val="photo">사진 찍기 좋은 곳</span>
+          </div>
+        </div>
+        <div class="filter-group">
+          <label>계절 (선택)</label>
+          <div class="chip-row" id="f-season">
+            <span class="chip" data-val="spring">봄</span>
+            <span class="chip" data-val="summer">여름</span>
+            <span class="chip" data-val="autumn">가을</span>
+            <span class="chip" data-val="winter">겨울</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="filter-col">
+        <div class="filter-toggle">
+          <div class="view-seg" id="view-mode">
+            <button data-view="list" class="on">목록</button>
+            <button data-view="card">카드</button>
+            <button data-view="map">지도</button>
+          </div>
+        </div>
+        <div class="filter-group" style="margin-top:12px">
+          <label>정렬</label>
+          <div class="chip-row" id="f-sort">
+            <span class="chip on" data-val="popular">인기순</span>
+            <span class="chip" data-val="dist">거리순</span>
+            <span class="chip" data-val="name">이름순</span>
+          </div>
+        </div>
+        <div class="result-line">
+          <span id="result-count">전체 <b>0</b>개</span>
+          <span id="result-scope" style="color:var(--muted)">필터: 없음</span>
+        </div>
+      </div>
+    </div>
+
+    <div id="view-list" class="list-view"></div>
+    <div id="view-card" class="card-grid hidden"></div>
+    <div id="view-map" class="map-view hidden">
+      <div class="map-label">지역 지도 위에서 핀 위치로 둘러보기</div>
+      <div class="map-footer">
+        <span style="display:flex;align-items:center;gap:6px"><span class="pin trail" style="width:10px;height:10px"></span> 산책로</span>
+        <span style="display:flex;align-items:center;gap:6px"><span class="pin park" style="width:10px;height:10px"></span> 공원</span>
+        <span style="margin-left:auto;color:var(--muted)">확대·이동 가능 (프로토타입 예시)</span>
+      </div>
+    </div>
+  </section>
+
+  <section id="section-detail" class="detail hidden">
+    <button class="back" id="detail-back">← 목록으로 돌아가기</button>
+    <div class="detail-top">
+      <div>
+        <h1 id="d-name"></h1>
+        <p class="loc" id="d-loc"></p>
+        <div class="detail-tags" id="d-tags"></div>
+      </div>
+      <div class="detail-actions">
+        <button class="btn" id="d-share">공유</button>
+        <button class="btn primary" id="d-save">저장</button>
+        <button class="btn" id="d-report">정보 보완 제보</button>
+      </div>
+    </div>
+
+    <div class="summary-row" id="d-summary">
+      <div class="s"><div class="v" id="d-dist"></div><div class="l">거리</div></div>
+      <div class="s"><div class="v" id="d-time"></div><div class="l">소요시간</div></div>
+      <div class="s"><div class="v" id="d-diff"></div><div class="l">난이도</div></div>
+    </div>
+
+    <div class="two-col">
+      <div class="block">
+        <h2>코스·위치</h2>
+        <div class="map-box" id="d-map">
+          <div class="route"></div>
+          <div class="start"></div>
+          <div class="end"></div>
+        </div>
+        <ul class="detail-list" id="d-course"></ul>
+        <div class="btn-row" id="d-map-links"></div>
+      </div>
+
+      <div class="block">
+        <h2>이용 정보</h2>
+        <ul class="detail-list" id="d-practical"></ul>
+        <ul class="detail-list" id="d-tip"></ul>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div class="block">
+        <h2>사진</h2>
+        <div class="gallery" id="d-gallery"></div>
+      </div>
+      <div class="block">
+        <h2>왜 이 곳인가요</h2>
+        <p id="d-reason" style="font-size:14px;color:var(--ink);margin:0"></p>
+        <div class="block" style="margin-top:18px">
+          <h2>함께 보면 좋은 곳</h2>
+          <div class="related" id="d-related"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="section-contribute" class="contrib hidden">
+    <button class="back" id="contrib-back">← 홈으로 돌아가기</button>
+    <h1>산책로·공원 제보하기</h1>
+    <p class="sub">새로 알게 된 걷기길이나 공원을 알려주세요. 검토 후 반영하면 다른 분들도 함께 볼 수 있어요.</p>
+
+    <div class="form-grid">
+      <div class="field full">
+        <label>제보 유형</label>
+        <select id="f-type-submit">
+          <option value="new">신규 등록</option>
+          <option value="update">정보 보완</option>
+          <option value="photo">사진 추가</option>
+          <option value="error">오류/변경 신고</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>유형 <span class="opt">산책로 / 공원</span></label>
+        <select id="f-type2">
+          <option value="trail">산책로</option>
+          <option value="park">공원</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>범위 성향 <span class="opt">선택</span></label>
+        <select id="f-range-submit">
+          <option value="travel">여행지 중심</option>
+          <option value="neighborhood">동네 생활권 중심</option>
+          <option value="both">둘 다</option>
+        </select>
+      </div>
+
+      <div class="field full">
+        <label>이름 <span class="opt">필수</span></label>
+        <input id="f-name" type="text" placeholder="예: 한강공원 자전거길, ○○근린공원">
+      </div>
+
+      <div class="field">
+        <label>시/도 <span class="opt">선택</span></label>
+        <input id="f-sido" type="text" placeholder="예: 서울, 경기">
+      </div>
+
+      <div class="field">
+        <label>시/군/구 <span class="opt">선택</span></label>
+        <input id="f-sgg" type="text" placeholder="예: 마포구, 송파구">
+      </div>
+
+      <div class="field full">
+        <label>위치 <span class="opt">주소 또는 지도 핀 표시</span></label>
+        <input id="f-location" type="text" placeholder="예: 서울 마포구 월드컵로 일대">
+      </div>
+
+      <div class="field full">
+        <label>코스 정보 <span class="opt">있으면 더 좋아요</span></label>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+          <input id="f-start" type="text" placeholder="출발점">
+          <input id="f-end" type="text" placeholder="도착점">
+          <input id="f-dist" type="text" placeholder="거리(예: 2.5km)">
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px">
+          <input id="f-time" type="text" placeholder="소요시간(예: 40분)">
+          <select id="f-diff">
+            <option value="light">가벼운 산책</option>
+            <option value="medium">보통</option>
+            <option value="hard">오래 걷기</option>
+          </select>
+        </div>
+        <input id="f-course-note" type="text" placeholder="코스 형태 메모(루프/편도/왕복 등)" style="margin-top:10px">
+      </div>
+
+      <div class="field full">
+        <label>실용 조건 <span class="opt">해당하면 체크</span></label>
+        <div class="check-group">
+          <label class="check-row"><input type="checkbox" id="c-transit"> 대중교통 이용 편함</label>
+          <label class="check-row"><input type="checkbox" id="c-parking"> 주차 가능</label>
+          <label class="check-row"><input type="checkbox" id="c-toilet"> 화장실 있음</label>
+          <label class="check-row"><input type="checkbox" id="c-pet"> 반려동물 동반 가능</label>
+          <label class="check-row"><input type="checkbox" id="c-stroller"> 유모차/휠체어 이용 참고</label>
+        </div>
+      </div>
+
+      <div class="field full">
+        <label> 분위기 / 목적 <span class="opt">여러 개 선택 가능</span></label>
+        <div class="chip-pick" id="f-mood-submit">
+          <span class="chip" data-val="healing">힐링</span>
+          <span class="chip" data-val="walk">산책</span>
+          <span class="chip" data-val="running">러닝</span>
+          <span class="chip" data-val="quiet">조용한 곳</span>
+          <span class="chip" data-val="fewpeople">사람 적은 곳</span>
+          <span class="chip" data-val="nightview">야경</span>
+          <span class="chip" data-val="photo">사진 찍기 좋은 곳</span>
+        </div>
+      </div>
+
+      <div class="field full">
+        <label>계절 <span class="opt">해당하면 선택</span></label>
+        <div class="chip-pick" id="f-season-submit">
+          <span class="chip" data-val="spring">봄</span>
+          <span class="chip" data-val="summer">여름</span>
+          <span class="chip" data-val="autumn">가을</span>
+          <span class="chip" data-val="winter">겨울</span>
+        </div>
+      </div>
+
+      <div class="field full">
+        <label>한 줄 소개 <span class="opt">선택</span></label>
+        <input id="f-intro" type="text" placeholder="한 줄로 짧게 소개해보세요">
+      </div>
+
+      <div class="field full">
+        <label>설명 / 추천 포인트 <span class="opt">선택</span></label>
+        <textarea id="f-reason" placeholder="왜 이 곳을 추천하는지, 어떤 점이 좋았는지 적어주세요"></textarea>
+      </div>
+
+      <div class="field full">
+        <label>주의사항 <span class="opt">있으면 적어주세요</span></label>
+        <textarea id="f-caution" placeholder="공사 구간, 야간 이용 참고, 경사로 등"></textarea>
+      </div>
+
+      <div class="submit-area">
+        <button class="btn primary" id="f-submit">제보 제출</button>
+        <span class="note">제출 후 검토 과정을 거쳐 반영됩니다.</span>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<button class="btn primary float-cta" id="fab-contribute">+ 제보하기</button>
+
+<script>
+/* ---------- 데이터 ---------- */
+const places = [
+  {
+    id: "p1",
+    name: "서울둘레길 8코스",
+    type: "trail",
+    scope: "travel",
+    sido: "서울",
+    sgg: "은평구·도봉구 일대",
+    location: "북한산 둘레를 따라 이어진 구간",
+    intro: "도심 근처에서도 산자락 분위기를 느끼며 걸을 수 있는 구간",
+    tags: ["산책","힐링","조용한 곳","사진 찍기 좋은 곳"],
+    season: ["spring","autumn"],
+    practical: ["transit","toilet"],
+    dist: "약 12km",
+    time: "약 3시간 30분",
+    diff: "medium",
+    course: [
+      {k:"코스 형태", v:"편도 권장, 중간 탈출 지점 다수"},
+      {k:"출발 느낌", v:"은평구 방향 진입이 접근성 좋음"},
+      {k:"주요 구간", v:"숲길과 마을길이 번갈아 나타남"},
+      {k:"주의", v:"일부 구간은 오르막이 있어 편한 신발 권장"}
+    ],
+    tip: [
+      {k:"대중교통", v:"구간별 접근점이 달라 출발점을 미리 정하면 좋음"},
+      {k:"추천 시간", v:"오전~오후 초반이 무난"},
+      {k:"계절", v:"봄·가을이 특히 좋음"}
+    ],
+    reason: "도심 한가운데서도 숲길 분위기를 길게 즐길 수 있어, 여행하듯 걷고 싶을 때 고르기 좋은 코스입니다.",
+    thumb: "thumb-trail-1",
+    photos: ["thumb-trail-1","thumb-trail-2","thumb-trail-3"],
+    popular: 86
+  },
+  {
+    id: "p2",
+    name: "강릉 경포호 둘레길",
+    type: "trail",
+    scope: "travel",
+    sido: "강원",
+    sgg: "강릉시",
+    location: "경포호 주변 순환 구간",
+    intro: "호수를 따라 걷는 평탄한 코스로, 풍경이 넓게 보여 산책하기 편함",
+    tags: ["힐링","산책","야경","사진 찍기 좋은 곳"],
+    season: ["spring","summer","autumn"],
+    practical: ["parking","toilet","stroller"],
+    dist: "약 6km",
+    time: "약 1시간 30분",
+    diff: "light",
+    course: [
+      {k:"코스 형태", v:"순환형, 원하는 지점에서 시작/종료 가능"},
+      {k:"출발 팁", v:"경포대 주변 진입부가 익숙함"},
+      {k:"주요 구간", v:"호면 조망 구간이 길게 이어짐"},
+      {k:"주의", v:"바람 강한 날은 체감 온도 주의"}
+    ],
+    tip: [
+      {k:"주차", v:"주변 주차공간 활용 가능"},
+      {k:"추천 시간", v:"해질 무렵 야경 조망이 좋음"},
+      {k:"계절", v:"여름엔 해질 무렵, 봄엔 꽃 시즌"}
+    ],
+    reason: "호수 풍경이 넓게 펼쳐져서 걷는 동안 답답함이 적고, 난이도도 무난해 여행 코스 중에 넣기 좋습니다.",
+    thumb: "thumb-trail-2",
+    photos: ["thumb-trail-2","thumb-trail-3","thumb-trail-1"],
+    popular: 71
+  },
+  {
+    id: "p3",
+    name: "성수동 서울숲 산책로",
+    type: "trail",
+    scope: "neighborhood",
+    sido: "서울",
+    sgg: "성동구",
+    location: "서울숲 내부 산책로",
+    intro: "도심 한가운데서 가볍게 걷고 쉬기 좋은 숲길과 쉼터가 많은 곳",
+    tags: ["산책","힐링","반려동물 동반","사람 적은 곳"],
+    season: ["spring","autumn"],
+    practical: ["transit","parking","toilet","pet","stroller"],
+    dist: "약 1.5~3km",
+    time: "약 30~50분",
+    diff: "light",
+    course: [
+      {k:"코스 형태", v:"내부 산책로는 취향 따라 짧게/길게 조절 가능"},
+      {k:"출발 팁", v:"지하철역 접근이 쉬워 퇴근 후 산책에 좋음"},
+      {k:"주요 구간", v:"넓은 잔디 구역과 숲길이 함께 있음"}
+    ],
+    tip: [
+      {k:"대중교통", v:"인근 역 접근성이 좋음"},
+      {k:"추천 시간", v:"저녁 시간 산책에 무난"},
+      {k:"계절", v:"봄·가을 산책에 특히 잘 어울림"}
+    ],
+    reason: "멀리 가지 않아도 숲 느낌과 쉼터를 함께 누릴 수 있어, 동네에서 자주 걷기 좋은 곳으로 고르기 좋습니다.",
+    thumb: "thumb-trail-3",
+    photos: ["thumb-trail-3","thumb-trail-1","thumb-trail-2"],
+    popular: 94
+  },
+  {
+    id: "p4",
+    name: "한강공원 자전거길·산책로",
+    type: "trail",
+    scope: "both",
+    sido: "서울",
+    sgg: "한강변",
+    location: "한강변 따라 이어진 보행·자전거 구간",
+    intro: "강변을 따라 넓고 탁 트인 길로, 산책과 러닝 모두 많이 찾는 곳",
+    tags: ["러닝","산책","야경","반려동물 동반","사람 적은 곳"],
+    season: ["spring","summer","autumn","winter"],
+    practical: ["transit","parking","toilet","pet","stroller"],
+    dist: "구간별 다양",
+    time: "원하는 만큼",
+    diff: "light",
+    course: [
+      {k:"코스 형태", v:"강변을 따라 길게 이어짐, 지점 선택 가능"},
+      {k:"출발 팁", v:"가까운 역으로 진입하면 편함"},
+      {k:"주요 구간", v:"강변 조망과 다리 구간이 이어짐"},
+      {k:"주의", v:"사람이 많은 시간대는 여유 있게 걷는 게 좋음"}
+    ],
+    tip: [
+      {k:"대중교통", v:"여러 진입점이 있어 접근 편함"},
+      {k:"추천 시간", v:"해질 무렵과 야경 시간대 인기"},
+      {k:"계절", v:"사계절 무난하지만 여름엔 그늘 구간 확인"}
+    ],
+    reason: "언제든 가볍게 나가 걷기 좋고, 구간 선택이 유연해서 동네 산책부터 조금 긴 걷기 코스까지 두루 쓰기 좋습니다.",
+    thumb: "thumb-trail-4",
+    photos: ["thumb-trail-4","thumb-trail-2","thumb-trail-3"],
+    popular: 120
+  },
+  {
+    id: "p5",
+    name: "송파구 올림픽공원",
+    type: "park",
+    scope: "neighborhood",
+    sido: "서울",
+    sgg: "송파구",
+    location: "올림픽공원 내부 산책로·광장",
+    intro: "넓고 산책할 구간이 많아, 가볍게 한 바퀴 돌기 좋은 공원",
+    tags: ["산책","힐링","사진 찍기 좋은 곳","사람 적은 곳"],
+    season: ["spring","autumn"],
+    practical: ["parking","toilet","stroller"],
+    dist: "약 3~5km",
+    time: "약 1~2시간",
+    diff: "light",
+    course: [
+      {k:"코스 형태", v:"내부 산책로는 여러 갈래, 원하는 만큼 조절 가능"},
+      {k:"출발 팁", v:"주차 후 중심광장에서 시작하면 편함"},
+      {k:"주요 구간", v:"넓은 광장과 숲길, 수변 구간이 섞여 있음"}
+    ],
+    tip: [
+      {k:"주차", v:"주차장 이용 가능"},
+      {k:"추천 시간", v:"오후~해질 무렵이 무난"},
+      {k:"계절", v:"봄 꽃 시즌에 특히 산책하기 좋음"}
+    ],
+    reason: "한 번 들어가면 산책할 선택지가 많아서, 동네에서 조금 길게 걷고 싶을 때 고르기 좋습니다.",
+    thumb: "thumb-park-1",
+    photos: ["thumb-park-1","thumb-park-2","thumb-park-3"],
+    popular: 88
+  },
+  {
+    id: "p6",
+    name: "마포구 월드컵공원",
+    type: "park",
+    scope: "both",
+    sido: "서울",
+    sgg: "마포구",
+    location: "월드컵공원 일대",
+    intro: "평지에 가까운 공원과 연결 산책로가 있어 부담 없이 걷기 좋은 곳",
+    tags: ["산책","힐링","반려동물 동반","조용한 곳"],
+    season: ["spring","summer","autumn","winter"],
+    practical: ["parking","toilet","pet","stroller"],
+    dist: "약 2~4km",
+    time: "약 40분~1시간 20분",
+    diff: "light",
+    course: [
+      {k:"코스 형태", v:"공원 내 산책로를 원하는 만큼 연결해서 걷기 좋음"},
+      {k:"출발 팁", v:"넓은 공간이라 진입점을 미리 정하면 편함"},
+      {k:"주요 구간", v:"잔디·산책로·수변 구역이 함께 있음"}
+    ],
+    tip: [
+      {k:"주차", v:"주차 가능"},
+      {k:"추천 시간", v:"오전 또는 해질 무렵"},
+      {k:"계절", v:"사계절 무난, 바람이 강한 날은 겉옷 추천"}
+    ],
+    reason: "너무 험하지 않으면서도 공원 규모가 있어, 동네에서 여유 있게 걷고 쉬기 좋은 곳으로 선택하기 좋습니다.",
+    thumb: "thumb-park-2",
+    photos: ["thumb-park-2","thumb-park-3","thumb-park-1"],
+    popular: 77
+  },
+  {
+    id: "p7",
+    name: "제주 올레길 7코스 일부",
+    type: "trail",
+    scope: "travel",
+    sido: "제주",
+    sgg: "서귀포·제주 해안 일대",
+    location: "해안과 마을을 잇는 올레 구간",
+    intro: "바닷 풍경과 마을 길을 함께 느낄 수 있는 대표적인 걷기 코스",
+    tags: ["힐링","산책","사진 찍기 좋은 곳","야경"],
+    season: ["spring","autumn"],
+    practical: ["parking","toilet"],
+    dist: "코스별 상이",
+    time: "코스별 상이",
+    diff: "medium",
+    course: [
+      {k:"코스 형태", v:"해안 구간과 마을 구간이 섞임"},
+      {k:"출발 팁", v:"코스 시작 지점을 미리 확인하면 편함"},
+      {k:"주요 구간", v:"해안 조망이 좋은 구간이 인상적"}
+    ],
+    tip: [
+      {k:"주차", v:"시작 지점 주변 주차 확인 필요"},
+      {k:"추천 시간", v:"오전~오후 초반이 무난"},
+      {k:"계절", v:"여름엔 햇볕, 봄·가을엔 걷기 좋음"}
+    ],
+    reason: "바다와 마을 풍경을 함께 걸어서, 여행 중에 걷기 코스를 하나 넣고 싶을 때 고르기 좋습니다.",
+    thumb: "thumb-trail-5",
+    photos: ["thumb-trail-5","thumb-trail-2","thumb-trail-4"],
+    popular: 99
+  }
+];
+
+/* ---------- 태그 레이블 ---------- */
+const tagLabels = {
+  transit: "대중교통 이용 편함",
+  parking: "주차 가능",
+  toilet: "화장실 있음",
+  pet: "반려동물 동반 가능",
+  stroller: "유모차/휠체어 이용 참고",
+  healing: "힐링",
+  walk: "산책",
+  running: "러닝",
+  quiet: "조용한 곳",
+  fewpeople: "사람 적은 곳",
+  nightview: "야경",
+  photo: "사진 찍기 좋은 곳",
+  spring: "봄",
+  summer: "여름",
+  autumn: "가을",
+  winter: "겨울"
+};
+
+/* ---------- 라우터 ---------- */
+const $ = (s) => document.querySelector(s);
+const $$ = (s) => document.querySelectorAll(s);
+
+function showSection(name, extra){
+  $$("section").forEach((s) => s.classList.add("hidden"));
+  const target = document.getElementById("section-" + name);
+  if(target) target.classList.remove("hidden");
+
+  $$(".nav-bar a").forEach((a) => a.classList.remove("active"));
+  const active = document.querySelector(`.nav-bar a[data-nav="${name}"]${extra ? `[data-nav2="${extra}"]` : ""}`);
+  if(active) active.classList.add("active");
+
+  if(name === "list"){
+    renderList(extra);
+  }
+}
+
+function renderHome(){
+  const mini = $("#home-mini");
+  const shown = places.filter((p) => p.scope === "travel" || p.scope === "both").slice(0,4).sort((a,b)=>b.popular-a.popular);
+  mini.innerHTML = shown.map((p) => `
+    <li>
+      <span class="name">${p.name}</span>
+      <span class="meta">${p.type==="trail"?"산책로":"공원"} · ${p.sido} · 인기 ${p.popular}</span>
+    </li>
+  `).join("");
+
+  const moodTags = ["healing","walk","quiet","nightview","photo","fewpeople"];
+  $("#home-pills").innerHTML = moodTags.map((t) => `<span class="pill green">${tagLabels[t]}</span>`).join("");
+
+  const types = [
+    {label:"신규 등록", desc:"처음 올리는 걷기길·공원"},
+    {label:"정보 보완", desc:"거리·시간·실용 정보 수정 제안"},
+    {label:"사진 추가", desc:"사진만 추가로 올리기"},
+    {label:"오류/변경 신고", desc:"공사·이전·잘못된 정보 신고"}
+  ];
+  $("#home-types").innerHTML = types.map((t) => `
+    <div style="font-size:13px;padding:6px 0;border-bottom:1px dashed var(--line)">
+      <strong style="color:var(--ink)">${t.label}</strong>
+      <div style="color:var(--muted);margin-top:2px">${t.desc}</div>
+    </div>
+  `).join("");
+}
+
+function renderList(scope){
+  const results = places.filter((p) => {
+    if(scope === "travel") return p.scope === "travel" || p.scope === "both";
+    if(scope === "neighborhood") return p.scope === "neighborhood" || p.scope === "both";
+    return true;
+  });
+  $("#list-title").textContent = scope === "travel" ? "여행지 걷기길·공원" : scope === "neighborhood" ? "동네 산책로·공원" : "걷기길·공원 목록";
+  $("#list-sub").textContent = results.length + "개 중 조건에 맞는 곳을 찾아보세요.";
+  renderView(results);
+}
+
+function renderView(results){
+  const filtered = applyFilters(results);
+  $("#result-count").innerHTML = "전체 <b>" + filtered.length + "</b>개";
+  const scopeText = $("#f-range .chip.on") ? $("#f-range .chip.on").textContent : "필터 없음";
+  $("#result-scope").textContent = scopeText + " 기준";
+
+  const listEl = $("#view-list");
+  const cardEl = $("#view-card");
+  const mapEl = $("#view-map");
+
+  listEl.innerHTML = "";
+  cardEl.innerHTML = "";
+  mapEl.innerHTML = `
+    <div class="map-label">지역 지도 위에서 핀 위치로 둘러보기</div>
+    <div class="map-footer">
+      <span style="display:flex;align-items:center;gap:6px"><span class="pin trail" style="width:10px;height:10px"></span> 산책로</span>
+      <span style="display:flex;align-items:center;gap:6px"><span class="pin park" style="width:10px;height:10px"></span> 공원</span>
+      <span style="margin-left:auto;color:var(--muted)">확대·이동 가능 (프로토타입 예시)</span>
+    </div>
+  `;
+
+  const pinsLayer = document.createElement("div");
+  pinsLayer.className = "pins";
+  filtered.forEach((p) => {
+    const pin = document.createElement("div");
+    pin.className = "pin " + p.type;
+    const regionCount = 7;
+    const x = 18 + ((p.id.charCodeAt(1) || 0) % regionCount) * 10;
+    const y = 30 + ((p.id.charCodeAt(2) || 0) % regionCount) * 7;
+    pin.style.left = x + "%";
+    pin.style.top = y + "%";
+    pin.title = p.name;
+    pinsLayer.appendChild(pin);
+  });
+  mapEl.insertBefore(pinsLayer, mapEl.firstChild);
+
+  const mode = currentView();
+  listEl.classList.add("hidden");
+  cardEl.classList.add("hidden");
+  mapEl.classList.add("hidden");
+
+  if(mode === "list"){
+    listEl.classList.remove("hidden");
+    listEl.innerHTML = filtered.map((p) => `
+      <div class="list-item" data-id="${p.id}">
+        <div class="thumb">
+          <span class="badge ${p.type}">${p.type==="trail"?"산책로":"공원"}</span>
+          ${p.thumb}
+        </div>
+        <div class="body">
+          <h3>${p.name}</h3>
+          <div class="loc">${p.type==="trail"?"산책로":"공원"} · ${p.sido} · ${p.sgg}</div>
+          <div class="tags">${tagsHtml(p.tags.concat(p.season.map(s=>tagLabels[s]||s)))}</div>
+        </div>
+        <div class="stats">
+          <span><strong style="color:var(--accent)">인기 ${p.popular}</strong></span>
+          <span>${p.dist} · ${p.time}</span>
+        </div>
+      </div>
+    `).join("");
+  } else if(mode === "card"){
+    cardEl.classList.remove("hidden");
+    cardEl.innerHTML = filtered.map((p) => `
+      <div class="card" data-id="${p.id}">
+        <div class="card-img">
+          <span class="badge ${p.type}">${p.type==="trail"?"산책로":"공원"}</span>
+          ${p.thumb}
+        </div>
+        <div class="card-body">
+          <h3>${p.name}</h3>
+          <div class="loc">${p.sido} · ${p.sgg}</div>
+          <p class="desc">${p.intro}</p>
+          <div class="tags">${tagsHtml(p.tags.concat(p.season.map(s=>tagLabels[s]||s)))}</div>
+        </div>
+        <div class="card-foot">
+          <span class="stat"><strong>인기 ${p.popular}</strong></span>
+          <span class="stat">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2a7 7 0 0 0-7 7c0 5 5 7 12 7s12-2 12-7-5-7-12-7z"/><circle cx="12" cy="9" r="2.2"/></svg>
+            ${p.dist}
+          </span>
+          <span class="stat">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+            ${p.time}
+          </span>
+        </div>
+      </div>
+    `).join("");
+  } else {
+    mapEl.classList.remove("hidden");
+  }
+}
+
+function tagsHtml(arr){
+  return arr.map((t) => `<span class="pill-sm">${t}</span>`).join("");
+}
+
+let currentViewMode = "list";
+function currentView(){ return currentViewMode; }
+
+function applyFilters(list){
+  const range = $("#f-range .chip.on")?.dataset.val;
+  const type = $("#f-type .chip.on")?.dataset.val;
+  const practical = [...$("#f-practical .chip.on")].map((c)=>c.dataset.val);
+  const mood = [...$("#f-mood .chip.on")].map((c)=>c.dataset.val);
+  const season = [...$("#f-season .chip.on")].map((c)=>c.dataset.val);
+
+  return list.filter((p) => {
+    if(range && range !== "both"){
+      if(range === "travel" && p.scope === "neighborhood") return false;
+      if(range === "neighborhood" && p.scope === "travel") return false;
+    }
+    if(type && type !== "both"){
+      if(p.type !== type) return false;
+    }
+    if(practical.length){
+      if(!practical.some((v) => p.practical.includes(v))) return false;
+    }
+    if(mood.length){
+      if(!mood.some((v) => p.tags.includes(v))) return false;
+    }
+    if(season.length){
+      if(!season.some((v) => p.season.includes(v))) return false;
+    }
+    return true;
+  });
+}
+
+$$(".chip").forEach((c) => {
+  c.addEventListener("click", () => {
+    const group = c.closest(".chip-row");
+    const single = group.id && (group.id.startsWith("f-") && !group.id.includes("mood") && !group.id.includes("season") && !group.id.includes("practical"));
+    const multi = group.id === "f-mood" || group.id === "f-season" || group.id === "f-practical" || group.id === "f-mood-submit" || group.id === "f-season-submit";
+
+    if(single){
+      group.querySelectorAll(".chip").forEach((x) => x.classList.remove("on"));
+      c.classList.add("on");
+    } else {
+      c.classList.toggle("on");
+    }
+
+    if($$("#section-list:not(.hidden)").length){
+      renderView(applyFilters(places));
+    }
+  });
+});
+
+$("#view-mode").addEventListener("click", (e) => {
+  const btn = e.target.closest("button");
+  if(!btn) return;
+  $("#view-mode button").forEach((b) => b.classList.remove("on"));
+  btn.classList.add("on");
+  currentViewMode = btn.dataset.view;
+  renderView(applyFilters(places));
+});
+
+$$("[data-nav]").forEach((a) => {
+  a.addEventListener("click", (e) => {
+    e.preventDefault();
+    const nav = a.dataset.nav;
+    const nav2 = a.dataset.nav2;
+    if(nav === "home"){ showSection("home"); renderHome(); }
+    else if(nav === "list"){ showSection("list", nav2); }
+    else if(nav === "contribute"){ showSection("contribute"); }
+  });
+});
+
+$("#detail-back").addEventListener("click", () => {
+  const last = lastListScope() || "travel";
+  showSection("list", last);
+});
+
+$("#contrib-back").addEventListener("click", () => {
+  showSection("home");
+  renderHome();
+});
+
+function lastListScope(){
+  const active = document.querySelector(".nav-bar a[data-nav='list'].active");
+  if(active) return active.dataset.nav2 || "travel";
+  return "travel";
+}
+
+$$(".list-item, .card").forEach((el) => {
+  el.addEventListener("click", () => {
+    const id = el.dataset.id;
+    const p = places.find((x) => x.id === id);
+    if(!p) return;
+    showDetail(p);
+  });
+});
+
+function showDetail(p){
+  $("#section-list").classList.add("hidden");
+  $("#section-detail").classList.remove("hidden");
+  $("#d-name").textContent = p.name;
+  $("#d-loc").textContent = p.type==="trail"?"산책로":"공원" + " · " + p.sido + " · " + p.sgg;
+  $("#d-tags").innerHTML = tagsHtml(p.tags.concat(p.season.map(s=>tagLabels[s]||s)));
+  $("#d-dist").textContent = p.dist;
+  $("#d-time").textContent = p.time;
+  $("#d-diff").textContent = p.diff === "light" ? "가벼운 산책" : p.diff === "medium" ? "보통" : "오래 걷기";
+
+  $("#d-course").innerHTML = p.course.map((c) => `<li><span class="k">${c.k}</span><span class="v">${c.v}</span></li>`).join("");
+  $("#d-practical").innerHTML = p.practical.map((v) => `<li><span class="k">${tagLabels[v]||v}</span><span class="v">○</span></li>`).join("");
+  $("#d-tip").innerHTML = p.tip.map((t) => `<li><span class="k">${t.k}</span><span class="v">${t.v}</span></li>`).join("");
+
+  $("#d-gallery").innerHTML = p.photos.map((ph) => `<div>${ph}</div>`).join("");
+  $("#d-reason").textContent = p.reason;
+  $("#d-related").innerHTML = places.filter((x) => x.id !== p.id).slice(0,3).map((r) => `
+    <div class="r-card">
+      <div class="r-thumb">${r.thumb}</div>
+      <div class="r-body">
+        <h4>${r.name}</h4>
+        <p>${r.type==="trail"?"산책로":"공원"} · ${r.sido}</p>
+      </div>
+    </div>
+  `).join("");
+
+  $("#d-share").onclick = () => alert("공유 링크는 실제 서비스 구현 단계에서 연결됩니다. (프로토타입 예시)");
+  $("#d-save").onclick = () => alert("저장 기능은 이후 단계에서 붙일 수 있습니다. (프로토타입 예시)");
+  $("#d-report").onclick = () => {
+    showSection("contribute");
+    $("#f-type-submit").value = "update";
+  };
+}
+
+$("#fab-contribute").addEventListener("click", () => {
+  showSection("contribute");
+});
+
+$("#f-submit").addEventListener("click", () => {
+  const type2 = $("#f-type2").value;
+  const name = $("#f-name").value.trim();
+  if(!name){
+    alert("이름을 입력해주세요.");
+    $("#f-name").focus();
+    return;
+  }
+  const data = {
+    type: type2,
+    name: name,
+    range: $("#f-range-submit").value,
+    sido: $("#f-sido").value.trim(),
+    sgg: $("#f-sgg").value.trim(),
+    location: $("#f-location").value.trim(),
+    start: $("#f-start").value.trim(),
+    end: $("#f-end").value.trim(),
+    dist: $("#f-dist").value.trim(),
+    time: $("#f-time").value.trim(),
+    diff: $("#f-diff").value,
+    courseNote: $("#f-course-note").value.trim(),
+    practical: [
+      $("#c-transit").checked && "transit",
+      $("#c-parking").checked && "parking",
+      $("#c-toilet").checked && "toilet",
+      $("#c-pet").checked && "pet",
+      $("#c-stroller").checked && "stroller"
+    ].filter(Boolean),
+    mood: [...$("#f-mood-submit .chip.on")].map((c)=>c.dataset.val),
+    season: [...$("#f-season-submit .chip.on")].map((c)=>c.dataset.val),
+    intro: $("#f-intro").value.trim(),
+    reason: $("#f-reason").value.trim(),
+    caution: $("#f-caution").value.trim(),
+    submitType: $("#f-type-submit").value
+  };
+  console.log("제보 데이터:", data);
+  alert("제보가 접수되었습니다. (프로토타입 예시)\n실제 서비스라면 검토 후 반영됩니다.");
+  $("#f-name").value = "";
+  $("#f-intro").value = "";
+  $("#f-reason").value = "";
+  $("#f-caution").value = "";
+});
+
+renderHome();
+</script>
+</body>
+</html>
