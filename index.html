@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>걷기길·공원 추천</title>
+  <title>걷기 - 걷기길·공원 추천</title>
+  <meta name="description" content="여행지의 걷기길부터 내 동네 근린공원까지, 코스를 중심으로 찾아보기 쉽게 정리한 산책로·공원 추천 서비스입니다.">
   <style>
     :root {
       --bg: #f6f7f3;
@@ -28,6 +29,33 @@
     a { color: inherit; }
 
     .wrap { max-width: 1180px; margin: 0 auto; padding: 0 22px; }
+
+    .footer {
+      margin-top: 48px;
+      padding: 24px 0 36px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .footer .f-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+    .footer .f-brand {
+      font-weight: 600;
+      color: var(--ink);
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+    .footer .f-brand svg { width: 18px; height: 18px; }
+    .footer .f-links { display: flex; gap: 14px; }
+    .footer .f-links a { color: var(--muted); }
+    .footer .f-links a:hover { color: var(--ink); }
+    .footer .f-note { margin-top: 10px; max-width: 620px; line-height: 1.6; }
 
     .hero {
       padding: 56px 0 38px;
@@ -275,6 +303,7 @@
       margin-bottom: 12px;
     }
     .result-line b { color: var(--ink); }
+    .result-empty { color: var(--muted); font-size: 13px; }
 
     .card-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; }
     .card {
@@ -338,6 +367,14 @@
     .card-foot .stat svg { width: 14px; height: 14px; }
 
     .list-view { display: flex; flex-direction: column; gap: 10px; }
+    .list-view .empty {
+      padding: 24px 16px;
+      color: var(--muted);
+      font-size: 14px;
+      border: 1px dashed var(--line);
+      border-radius: 12px;
+      background: var(--card);
+    }
     .list-item {
       background: var(--card);
       border: 1px solid var(--line);
@@ -383,6 +420,16 @@
       color: var(--muted);
       font-size: 14px;
       position: relative;
+    }
+    .map-view .empty {
+      padding: 24px 16px;
+      color: var(--muted);
+      font-size: 14px;
+      border: 1px dashed var(--line);
+      border-radius: 12px;
+      background: var(--card);
+      text-align: center;
+      width: 100%;
     }
     .map-view .pins { position: absolute; inset: 0; }
     .pin {
@@ -527,6 +574,9 @@
       font-size: 12px;
     }
 
+    .related {
+      margin-top: 8px;
+    }
     .related .r-card {
       display: flex;
       gap: 12px;
@@ -634,6 +684,7 @@
       .home-aside { width: 100%; }
       .entry-grid { grid-template-columns: 1fr; }
       .summary-row { grid-template-columns: 1fr 1fr; }
+      .footer .f-row { flex-direction: column; align-items: flex-start; }
     }
   </style>
 </head>
@@ -647,7 +698,7 @@
         <path d="M3 17c0 4 3 6 6 6s6-2 6-6"/>
         <path d="M15 7l3-3 3 3"/>
       </svg>
-      걷기길·공원 추천
+      걷기
     </div>
     <div class="links">
       <a href="#" data-nav="home" class="active">홈</a>
@@ -663,7 +714,7 @@
   <section id="section-home" class="home">
     <div class="hero">
       <h1>걷기 좋은 길, 산책하기 좋은 공원</h1>
-      <p class="lead">여행지의 걷기길부터 내 동네 근린공원까지, 코스를 중심으로 찾아보기 쉽게 정리합니다. 직접 가본 곳, 가보고 싶은 곳을 제보로 함께 채워요.</p>
+      <p class="lead">여행지의 걷기길부터 내 동네 근린공원까지, 코스를 중심으로 찾아보기 쉽게 정리합니다. 가본 곳, 가볼 만한 곳을 제보로 함께 채워요.</p>
       <div class="entry-grid">
         <div class="entry-card travel">
           <h2>여행지 걷기길·공원</h2>
@@ -689,11 +740,11 @@
       </div>
       <div class="home-aside">
         <div class="pill-box">
-          <h2>분위기 태그 예시</h2>
+          <h2>분위기 태그</h2>
           <div id="home-pills"></div>
         </div>
         <div class="pill-box">
-          <h2>제보 유형 예시</h2>
+          <h2>제보 유형</h2>
           <div id="home-types"></div>
         </div>
       </div>
@@ -777,6 +828,7 @@
         </div>
         <div class="result-line">
           <span id="result-count">전체 <b>0</b>개</span>
+          <span class="result-empty" id="result-empty" style="display:none">현재 조건에서는 표시할 곳이 없어요. 필터 범위를 넓히거나 다른 조건을 선택해보세요.</span>
           <span id="result-scope" style="color:var(--muted)">필터: 없음</span>
         </div>
       </div>
@@ -789,7 +841,7 @@
       <div class="map-footer">
         <span style="display:flex;align-items:center;gap:6px"><span class="pin trail" style="width:10px;height:10px"></span> 산책로</span>
         <span style="display:flex;align-items:center;gap:6px"><span class="pin park" style="width:10px;height:10px"></span> 공원</span>
-        <span style="margin-left:auto;color:var(--muted)">확대·이동 가능 (프로토타입 예시)</span>
+        <span style="margin-left:auto;color:var(--muted)">확대·이동 가능</span>
       </div>
     </div>
   </section>
@@ -824,7 +876,10 @@
           <div class="end"></div>
         </div>
         <ul class="detail-list" id="d-course"></ul>
-        <div class="btn-row" id="d-map-links"></div>
+        <div class="btn-row" id="d-map-links">
+          <button class="btn" id="d-map-large">지도에서 크게 보기</button>
+          <button class="btn" id="d-map-nav">길찾기</button>
+        </div>
       </div>
 
       <div class="block">
@@ -980,6 +1035,30 @@
 </div>
 
 <button class="btn primary float-cta" id="fab-contribute">+ 제보하기</button>
+
+<footer class="footer">
+  <div class="wrap">
+    <div class="f-row">
+      <div class="f-brand">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M3 13c0 4 3 6 6 6s6-2 6-6"/>
+          <path d="M3 17c0 4 3 6 6 6s6-2 6-6"/>
+          <path d="M15 7l3-3 3 3"/>
+        </svg>
+        걷기 - 걷기길·공원 추천
+      </div>
+      <div class="f-links">
+        <a href="#" data-nav="home">홈</a>
+        <a href="#" data-nav="list" data-nav2="travel">여행지</a>
+        <a href="#" data-nav="list" data-nav2="neighborhood">동네</a>
+        <a href="#" data-nav="contribute">제보하기</a>
+      </div>
+    </div>
+    <div class="f-note">
+      이 서비스는 걷기 좋은 산책로와 산책하기 좋은 공원을 코스 중심으로 소개하는 안내 페이지입니다. 표시된 거리·소요시간·난이도는 참고용 정보이며, 실제 이용 시 현장 상황에 따라 달라질 수 있습니다. 제보는 검토 후 반영되며, 정확하지 않은 정보는 보완 또는 수정될 수 있습니다.
+    </div>
+  </div>
+</footer>
 
 <script>
 /* ---------- 데이터 ---------- */
@@ -1277,22 +1356,26 @@ function renderList(scope){
 
 function renderView(results){
   const filtered = applyFilters(results);
-  $("#result-count").innerHTML = "전체 <b>" + filtered.length + "</b>개";
-  const scopeText = $("#f-range .chip.on") ? $("#f-range .chip.on").textContent : "필터 없음";
-  $("#result-scope").textContent = scopeText + " 기준";
+  const empty = filtered.length === 0;
+  $("#result-count").innerHTML = empty ? "<span style=\"color:var(--muted);font-weight:500\">표시할 곳이 없어요</span>" : "전체 <b>" + filtered.length + "</b>개";
+  $("#result-empty").style.display = empty ? "inline" : "none";
+  const scopeText = empty ? "필터 결과 없음" : ($("#f-range .chip.on") ? $("#f-range .chip.on").textContent : "필터 없음");
+  $("#result-scope").textContent = scopeText;
 
   const listEl = $("#view-list");
   const cardEl = $("#view-card");
   const mapEl = $("#view-map");
 
-  listEl.innerHTML = "";
-  cardEl.innerHTML = "";
-  mapEl.innerHTML = `
+  const emptyNote = "현재 조건에서는 표시할 곳이 없어요. 필터 범위를 넓히거나 다른 조건을 선택해보세요.";
+
+  listEl.innerHTML = empty ? `<div class="empty">${emptyNote}</div>` : "";
+  cardEl.innerHTML = empty ? `<div class="empty" style="grid-column:1/-1">${emptyNote}</div>` : "";
+  mapEl.innerHTML = empty ? `<div class="empty">${emptyNote}</div>` : `
     <div class="map-label">지역 지도 위에서 핀 위치로 둘러보기</div>
     <div class="map-footer">
       <span style="display:flex;align-items:center;gap:6px"><span class="pin trail" style="width:10px;height:10px"></span> 산책로</span>
       <span style="display:flex;align-items:center;gap:6px"><span class="pin park" style="width:10px;height:10px"></span> 공원</span>
-      <span style="margin-left:auto;color:var(--muted)">확대·이동 가능 (프로토타입 예시)</span>
+      <span style="margin-left:auto;color:var(--muted)">확대·이동 가능</span>
     </div>
   `;
 
@@ -1309,7 +1392,7 @@ function renderView(results){
     pin.title = p.name;
     pinsLayer.appendChild(pin);
   });
-  mapEl.insertBefore(pinsLayer, mapEl.firstChild);
+  if(!empty) mapEl.insertBefore(pinsLayer, mapEl.firstChild);
 
   const mode = currentView();
   listEl.classList.add("hidden");
@@ -1402,6 +1485,7 @@ function applyFilters(list){
   });
 }
 
+/* ---------- 이벤트 ---------- */
 $$(".chip").forEach((c) => {
   c.addEventListener("click", () => {
     const group = c.closest(".chip-row");
@@ -1457,6 +1541,7 @@ function lastListScope(){
   return "travel";
 }
 
+/* ---------- 상세 ---------- */
 $$(".list-item, .card").forEach((el) => {
   el.addEventListener("click", () => {
     const id = el.dataset.id;
@@ -1492,14 +1577,34 @@ function showDetail(p){
     </div>
   `).join("");
 
-  $("#d-share").onclick = () => alert("공유 링크는 실제 서비스 구현 단계에서 연결됩니다. (프로토타입 예시)");
-  $("#d-save").onclick = () => alert("저장 기능은 이후 단계에서 붙일 수 있습니다. (프로토타입 예시)");
+  $("#d-share").onclick = () => {
+    const url = location.href;
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(url).then(()=>{
+        alert("현재 페이지 주소가 복사됐습니다.");
+      }).catch(()=>{
+        alert("공유 링크: " + url);
+      });
+    } else {
+      alert("공유 링크: " + url);
+    }
+  };
+  $("#d-save").onclick = () => {
+    alert("저장 기능은 이후 단계에서 반영할 수 있습니다.");
+  };
   $("#d-report").onclick = () => {
     showSection("contribute");
     $("#f-type-submit").value = "update";
   };
+  $("#d-map-large").onclick = () => {
+    alert("실제 서비스에서는 이 버튼으로 지도 화면을 더 크게 볼 수 있습니다.");
+  };
+  $("#d-map-nav").onclick = () => {
+    alert("실제 서비스에서는 외부 지도 앱으로 길찾기를 연결할 수 있습니다.");
+  };
 }
 
+/* ---------- 제보 제출 ---------- */
 $("#fab-contribute").addEventListener("click", () => {
   showSection("contribute");
 });
@@ -1540,13 +1645,14 @@ $("#f-submit").addEventListener("click", () => {
     submitType: $("#f-type-submit").value
   };
   console.log("제보 데이터:", data);
-  alert("제보가 접수되었습니다. (프로토타입 예시)\n실제 서비스라면 검토 후 반영됩니다.");
+  alert("제보가 접수됐습니다. 검토 후 서비스에 반영됩니다.");
   $("#f-name").value = "";
   $("#f-intro").value = "";
   $("#f-reason").value = "";
   $("#f-caution").value = "";
 });
 
+/* ---------- 초기 실행 ---------- */
 renderHome();
 </script>
 </body>
