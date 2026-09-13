@@ -819,6 +819,12 @@
           </div>
         </div>
         <div class="filter-group" style="margin-top:12px">
+          <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px">
+            <button class="btn primary" id="btn-find">찾기</button>
+            <span class="note" style="font-size:12px;color:var(--muted)">선택한 조건으로 다시 찾습니다.</span>
+          </div>
+        </div>
+        <div class="filter-group" style="margin-top:12px">
           <label>정렬</label>
           <div class="chip-row" id="f-sort">
             <span class="chip on" data-val="popular">인기순</span>
@@ -1320,11 +1326,19 @@ function renderHome(){
   const mini = $("#home-mini");
   const shown = places.filter((p) => p.scope === "travel" || p.scope === "both").slice(0,4).sort((a,b)=>b.popular-a.popular);
   mini.innerHTML = shown.map((p) => `
-    <li>
+    <li data-id="${p.id}">
       <span class="name">${p.name}</span>
       <span class="meta">${p.type==="trail"?"산책로":"공원"} · ${p.sido} · 인기 ${p.popular}</span>
     </li>
   `).join("");
+  mini.querySelectorAll("li").forEach((li) => {
+    li.addEventListener("click", () => {
+      const id = li.dataset.id;
+      const p = places.find((x) => x.id === id);
+      if(p) showDetail(p);
+    });
+    li.style.cursor = "pointer";
+  });
 
   const moodTags = ["healing","walk","quiet","nightview","photo","fewpeople"];
   $("#home-pills").innerHTML = moodTags.map((t) => `<span class="pill green">${tagLabels[t]}</span>`).join("");
@@ -1503,6 +1517,12 @@ $$(".chip").forEach((c) => {
       renderView(applyFilters(places));
     }
   });
+});
+
+$("#btn-find").addEventListener("click", () => {
+  if($$("#section-list:not(.hidden)").length){
+    renderView(applyFilters(places));
+  }
 });
 
 $("#view-mode").addEventListener("click", (e) => {
