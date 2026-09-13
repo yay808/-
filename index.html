@@ -729,7 +729,7 @@
       </div>
       <div class="btn-row">
         <button class="btn primary" data-nav="contribute">제보하기</button>
-        <button class="btn" data-nav="list">지도에서 보기</button>
+        <button class="btn" data-nav="list" data-view="map">지도에서 보기</button>
       </div>
     </div>
 
@@ -1540,7 +1540,16 @@ $$("[data-nav]").forEach((a) => {
     const nav = a.dataset.nav;
     const nav2 = a.dataset.nav2;
     if(nav === "home"){ showSection("home"); renderHome(); }
-    else if(nav === "list"){ showSection("list", nav2); }
+    else if(nav === "list"){
+      showSection("list", nav2);
+      const dv = a.dataset.view;
+      if(dv){
+        currentViewMode = dv;
+        $("#view-mode button").forEach((b) => b.classList.remove("on"));
+        $("#view-mode button[data-view='" + dv + "']").forEach((b) => b.classList.add("on"));
+        renderView(applyFilters(places));
+      }
+    }
     else if(nav === "contribute"){ showSection("contribute"); }
   });
 });
